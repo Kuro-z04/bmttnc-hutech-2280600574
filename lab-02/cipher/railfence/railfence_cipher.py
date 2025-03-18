@@ -1,9 +1,9 @@
 class RailFenceCipher:
-    def __init__(self):
-        pass
+    def __init__(self, num_rails):
+        self.num_rails = num_rails
 
-    def rail_fence_encrypt(self, plain_text, num_rails):
-        rails = [[] for _ in range(num_rails)]
+    def encrypt(self, plain_text):
+        rails = [[] for _ in range(self.num_rails)]
         rail_index = 0
         direction = 1  # 1: down, -1: up
 
@@ -11,15 +11,19 @@ class RailFenceCipher:
             rails[rail_index].append(char)
             if rail_index == 0:
                 direction = 1
-            elif rail_index == num_rails - 1:
+            elif rail_index == self.num_rails - 1:
                 direction = -1
             rail_index += direction
 
         cipher_text = ''.join(''.join(rail) for rail in rails)
         return cipher_text
 
-    def rail_fence_decrypt(self, cipher_text, num_rails):
-        rail_lengths = [0] * num_rails
+    def decrypt(self, cipher_text):
+        if not cipher_text or self.num_rails <= 1:
+            return cipher_text
+
+        # Tính độ dài mỗi rail
+        rail_lengths = [0] * self.num_rails
         rail_index = 0
         direction = 1
 
@@ -27,27 +31,39 @@ class RailFenceCipher:
             rail_lengths[rail_index] += 1
             if rail_index == 0:
                 direction = 1
-            elif rail_index == num_rails - 1:
+            elif rail_index == self.num_rails - 1:
                 direction = -1
             rail_index += direction
 
+        # Chia cipher_text thành các rails
         rails = []
         start = 0
         for length in rail_lengths:
-            rails.append(cipher_text[start:start + length])
+            rails.append(list(cipher_text[start:start + length]))
             start += length
 
-        plain_text = ""
+        # Xây dựng lại plain_text
+        plain_text = []
         rail_index = 0
         direction = 1
 
+        # Tạo danh sách vị trí zigzag
+        positions = []
         for _ in range(len(cipher_text)):
-            plain_text += rails[rail_index][0]
-            rails[rail_index] = rails[rail_index][1:]
+            positions.append(rail_index)
             if rail_index == 0:
                 direction = 1
-            elif rail_index == num_rails - 1:
+            elif rail_index == self.num_rails - 1:
                 direction = -1
             rail_index += direction
 
-        return plain_text
+        # Đặt ký tự từ rails vào đúng vị trí
+        result = [''] * len(cipher_text)
+        char_index = 0
+        for rail in range(self.num_rails):
+            for pos in range(len(positions)):
+                if positions[pos] == rail and char_index < len(cipher_text):
+                    result[pos] = rails[rail].pop(0)
+                    char_index += 1
+
+        return ''.join(result)
