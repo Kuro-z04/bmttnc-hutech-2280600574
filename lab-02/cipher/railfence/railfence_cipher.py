@@ -1,69 +1,64 @@
 class RailFenceCipher:
-    def __init__(self, num_rails):
-        self.num_rails = num_rails
+    def __init__(self):
+        pass
 
-    def encrypt(self, plain_text):
-        rails = [[] for _ in range(self.num_rails)]
-        rail_index = 0
-        direction = 1  # 1: down, -1: up
+    def rail_fence_encrypt(self, plain_text, key):
+        if not plain_text or key < 1:
+            raise ValueError("plain_text must not be empty and key must be at least 1")
 
+        # Khởi tạo mảng rails
+        rail = [''] * key
+        row, step = 0, 1
+
+        # Đặt các ký tự vào các rail theo mô hình zigzag
         for char in plain_text:
-            rails[rail_index].append(char)
-            if rail_index == 0:
-                direction = 1
-            elif rail_index == self.num_rails - 1:
-                direction = -1
-            rail_index += direction
+            rail[row] += char
+            if row == 0:
+                step = 1
+            elif row == key - 1:
+                step = -1
+            row += step
 
-        cipher_text = ''.join(''.join(rail) for rail in rails)
-        return cipher_text
+        # Kết hợp các rail để tạo văn bản mã hóa
+        return ''.join(rail)
 
-    def decrypt(self, cipher_text):
-        if not cipher_text or self.num_rails <= 1:
-            return cipher_text
+    def rail_fence_decrypt(self, cipher_text, key):
+        if not cipher_text or key < 1:
+            raise ValueError("cipher_text must not be empty and key must be at least 1")
 
-        # Tính độ dài mỗi rail
-        rail_lengths = [0] * self.num_rails
-        rail_index = 0
-        direction = 1
+        n = len(cipher_text)
+        # Tạo mảng để đánh dấu vị trí các ký tự trong mô hình zigzag
+        rail = [['\n' for _ in range(n)] for _ in range(key)]
+        row, col, step = 0, 0, 1
 
-        for _ in range(len(cipher_text)):
-            rail_lengths[rail_index] += 1
-            if rail_index == 0:
-                direction = 1
-            elif rail_index == self.num_rails - 1:
-                direction = -1
-            rail_index += direction
+        # Đánh dấu vị trí các ký tự trong mô hình zigzag
+        for i in range(n):
+            rail[row][col] = '*'
+            if row == 0:
+                step = 1
+            elif row == key - 1:
+                step = -1
+            row += step
+            col += 1
 
-        # Chia cipher_text thành các rails
-        rails = []
-        start = 0
-        for length in rail_lengths:
-            rails.append(list(cipher_text[start:start + length]))
-            start += length
+        # Điền các ký tự từ cipher_text vào các vị trí đã đánh dấu
+        index = 0
+        for i in range(key):
+            for j in range(n):
+                if rail[i][j] == '*' and index < n:
+                    rail[i][j] = cipher_text[index]
+                    index += 1
 
-        # Xây dựng lại plain_text
-        plain_text = []
-        rail_index = 0
-        direction = 1
-
-        # Tạo danh sách vị trí zigzag
-        positions = []
-        for _ in range(len(cipher_text)):
-            positions.append(rail_index)
-            if rail_index == 0:
-                direction = 1
-            elif rail_index == self.num_rails - 1:
-                direction = -1
-            rail_index += direction
-
-        # Đặt ký tự từ rails vào đúng vị trí
-        result = [''] * len(cipher_text)
-        char_index = 0
-        for rail in range(self.num_rails):
-            for pos in range(len(positions)):
-                if positions[pos] == rail and char_index < len(cipher_text):
-                    result[pos] = rails[rail].pop(0)
-                    char_index += 1
+        # Đọc lại các ký tự theo mô hình zigzag để giải mã
+        result = []
+        row, col, step = 0, 0, 1
+        for i in range(n):
+            result.append(rail[row][col])
+            if row == 0:
+                step = 1
+            elif row == key - 1:
+                step = -1
+            row += step
+            col += 1
 
         return ''.join(result)
