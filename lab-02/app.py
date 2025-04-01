@@ -62,16 +62,16 @@ def railfence():
 def railfence_encrypt():
     text = request.form['inputPlainText']
     rails = int(request.form['inputRails'])
-    railfence = RailFenceCipher(rails)
-    encrypted_text = railfence.encrypt(text)
+    railfence = RailFenceCipher()  # Không truyền rails ở đây
+    encrypted_text = railfence.rail_fence_encrypt(text, rails)  # Truyền rails vào đây
     return f"text: {text}<br>rails: {rails}<br>encrypted text: {encrypted_text}"
 
 @app.route("/railfence/decrypt", methods=['POST'])
 def railfence_decrypt():
     text = request.form['inputCipherText']
     rails = int(request.form['inputRails'])
-    railfence = RailFenceCipher(rails)
-    decrypted_text = railfence.decrypt(text)
+    railfence = RailFenceCipher()  # Không truyền rails ở đây
+    decrypted_text = railfence.rail_fence_decrypt(text, rails)  # Truyền rails vào đây
     return f"text: {text}<br>rails: {rails}<br>decrypted text: {decrypted_text}"
 
 # Playfair Cipher
